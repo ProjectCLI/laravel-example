@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+  web:
+    image: chriha/php:7.4
+    volumes:
+      - ./src:/var/www
+      - ./temp:/temp
+    ports:
+      - "${APP_PORT}:80"
+    environment:
+      COMPOSER_HOME: "/temp/composer"
+    networks:
+      - default
+    links:
+      - db
+      - redis
+      - mailcatcher
+    env_file:
+      - ./src/.env
+  db:
+    image: mysql:8
+    restart: always
+    ports:
+      - "${DB_PORT}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASS}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASS}"
+      MYSQL_DATABASE: "${DB_NAME}"
+    volumes:
+      - ./temp/mysql:/var/lib/mysql:delegated
+    networks:
+      - default
+  node:
+    image: chriha/node:12
+    volumes:
+      - ./src:/var/www
+  redis:
+    image: redis:5.0
+    volumes:
+      - ./temp/redis:/data:cached
+    networks:
+      - default
+    command: redis-server
+  mailcatcher:
+    image: chriha/mailcatcher:0.7
+    networks:
+      - default
+    ports:
+      - "${MAILCATCHER_PORT}:1080"
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "${MYADMIN_PORT}:80"
+    networks:
+      - default
+    links:
+      - db
+  echo:
+    image: chriha/echo
+    volumes:
+      - ./conf/echo/laravel-echo-server.json:/var/www/laravel-echo-server.json
+    ports:
+      - "${ECHO_PORT}:6001"
+    networks:
+      - default
+    links:
+      - web
+      - redis
+
+networks:
+  default:
+    driver: "bridge"
