@@ -30,6 +30,7 @@ class SetupCommand extends Command
         $this->call('composer', ['install']);
         $this->call('artisan', ['key:generate']);
         $this->call('restart');
+        $this->call('artisan', ['migrate:install']);
         $this->call('artisan', ['migrate', '--seed']);
         $this->info('Project successfully installed');
     }
