@@ -23,9 +23,14 @@ class SetupCommand extends Command
             copy(Helpers::projectPath('.env.example'), Helpers::projectPath('.env'));
         }
 
+        if ( ! file_exists(Helpers::projectPath('src/.env'))) {
+            copy(Helpers::projectPath('src/.env.example'), Helpers::projectPath('src/.env'));
+        }
+
         $this->call('composer', ['install']);
-        $this->call('artisan', ['migrate', '--seed']);
+        $this->call('artisan', ['key:generate']);
         $this->call('restart');
+        $this->call('artisan', ['migrate', '--seed']);
         $this->info('Project successfully installed');
     }
 
